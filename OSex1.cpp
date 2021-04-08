@@ -60,7 +60,7 @@ int main() {
     PCB p1(Process_number, Arrive_time, Run_time, Priority_, Time_slice);
     v1.push_back(p1);
   }
-  switch (algorithmnumber) {
+  switch (algorithmnumber) {  // 5 different algorithms
     case (1): {
       FCFSalgorithm(v1);
       break;
@@ -118,9 +118,9 @@ bool ComparePCBforPriority::operator()(const PCB& p1, const PCB& p2) {
   }
 };  // In Dynamic priority algorithm,sorting rules are as follows:
 // descending according to the is_arrived, if the is_arrived are the same,
-// ascending according to the priority,if the the is_arrived and priority are
+// ascending according to the priority,if the is_arrived and priority are
 // the same, ascending according to the arrival time,if the the
-// is_arrived,priority anr the arrival time are the same, ascending according to
+// is_arrived,priority and the arrival time are the same, ascending according to
 // the process number
 void FCFSalgorithm(vector<PCB>& v1) {
   int number = 1;                                   // Scheduling sequence
@@ -133,32 +133,38 @@ void FCFSalgorithm(vector<PCB>& v1) {
     }
     cout << number << '/' << it->process_number << '/' << time << '/'
          << time + it->run_time << '/' << it->priority_ << endl;
-    time += it->run_time; //The time after the end of the current process
+    time += it->run_time;  // The time after the end of the current process
     ++number;
   }
 };
 void SJFalgorithm(vector<PCB>& v1) {
-  int time = 0;
-  int number = 1;
+  int time = 0;       // Current time
+  int number = 1;     // Scheduling sequence
   bool find = false;  // Determines whether a process has arrived at the
                       // current time in the process queue after sorting
   vector<PCB>::iterator it;
-  sort(v1.begin(), v1.end(), ComparePCBforSJF());  // sort by run time
-  while (!v1.empty()) {
+  sort(v1.begin(), v1.end(),
+       ComparePCBforSJF());  // sort by run time, then arrival time.
+  while (!v1.empty()) {  // When v1 is empty,it turns out that all the processe
+                         // have been completed.
     for (it = v1.begin(); it != v1.end(); it++) {
       find = false;
-      if (it->arrive_time <= time) it->is_arrived = true;
+      if (it->arrive_time <= time)
+        it->is_arrived = true;  // Find the shortest running time process that
+                                // can run at the current time
       if (it->is_arrived == true) {
         cout << number << '/' << it->process_number << '/' << time << '/'
              << time + it->run_time << '/' << it->priority_ << endl;
-        time += it->run_time;
+        time += it->run_time;  // change the time
         ++number;
-        v1.erase(it);
-        find = true;  // The reached process was found at the current time
+        v1.erase(it);  // Erase the process which has been completed.
+        find = true;   // The reached process was found at the current time.
         break;
       }
     }
-    if (find == false) ++time;
+    if (find == false)
+      ++time;  // When find == false,it turns out that no processes can be
+               // runned now.
   }
 };
 void SRTFalgorithm(vector<PCB>& v1) {
@@ -243,18 +249,23 @@ void SRTFalgorithm(vector<PCB>& v1) {
 void Timeslicealgorithm(vector<PCB>& v1) {
   int time = 0;
   int number = 1;
-  sort(v1.begin(), v1.end(), ComparePCBforFCFS());
-  queue<PCB> q1;
+  sort(v1.begin(), v1.end(), ComparePCBforFCFS());  // Sort by the arrival time,
+                                                    // then the process number.
+  queue<PCB> q1;  // Use a queue to save the process that has been arrived.
   vector<PCB>::iterator it;
-  while (q1.empty() != true || v1.empty() != true) {
-    if (q1.empty() == true) {
+  while (!q1.empty() || !v1.empty()) {  // When the queue and the vector are
+                                        // both empty, then exit the loop.
+    if (q1.empty() ==
+        true) {  // When the queue is empty, it indicates that the first process
+                 // saved in the vector should be moved into the queue.
       it = v1.begin();
-      time = it->arrive_time;
-      q1.push(*it);
+      time = it->arrive_time;  // Change the time.
+      q1.push(*it);            // Move the first process into the queue.
       v1.erase(it);
       it = v1.begin();
       while (it != v1.end()) {
-        if (it->arrive_time == time) {
+        if (it->arrive_time == time) {  // Consider whether other processes have
+                                        // the same arrival time.
           q1.push(*it);
           v1.erase(it);
           it = v1.begin();
@@ -262,17 +273,21 @@ void Timeslicealgorithm(vector<PCB>& v1) {
           break;
         }
       }
-    } else {
-      if (q1.front().run_time <= q1.front().time_slice) {
+    } else {  // When the queue is not empty.
+      if (q1.front().run_time <=
+          q1.front().time_slice) {  // When the front of the queue will run to
+                                    // the end during the time slice.
         cout << number << '/' << q1.front().process_number << '/' << time << '/'
              << time + q1.front().run_time << '/' << q1.front().priority_
              << endl;
-        time += q1.front().run_time;
+        time += q1.front().run_time;  // Change the time.
         ++number;
-        q1.pop();
+        q1.pop();  // Remove the q1.front from the queue.
         it = v1.begin();
         while (it != v1.end()) {
-          if (it->arrive_time <= time) {
+          if (it->arrive_time <=
+              time) {  // Move the process which has been arrived at the time
+                       // from the vector to the queue.
             q1.push(*it);
             v1.erase(it);
             it = v1.begin();
@@ -280,18 +295,21 @@ void Timeslicealgorithm(vector<PCB>& v1) {
             break;
           }
         }
-      } else {
+      } else {  // When the front of the queuq will not run to the end during
+                // the time slice.
         cout << number << '/' << q1.front().process_number << '/' << time << '/'
              << time + q1.front().time_slice << '/' << q1.front().priority_
              << endl;
         time += q1.front().time_slice;
         ++number;
         q1.front().run_time = q1.front().run_time - q1.front().time_slice;
-        PCB p1(q1.front());
+        PCB p1(q1.front());  // The p1 will move to the end of the queue.
         q1.pop();
         it = v1.begin();
         while (it != v1.end()) {
-          if (it->arrive_time <= time) {
+          if (it->arrive_time <=
+              time) {  // Move the process which has been arrived at the time
+                       // from the vector to the queue.
             q1.push(*it);
             v1.erase(it);
             it = v1.begin();
@@ -299,7 +317,7 @@ void Timeslicealgorithm(vector<PCB>& v1) {
             break;
           }
         }
-        q1.push(p1);
+        q1.push(p1);  // Move p1 to the end of the queue.
       }
     }
   }
@@ -311,26 +329,30 @@ void Priorityalgorithm(vector<PCB>& v1) {
   vector<PCB>::iterator it;
   while (!v1.empty()) {
     find = false;
-    for (it = v1.begin(); it != v1.end(); it++) {
+    for (it = v1.begin(); it != v1.end();
+         it++) {  // Traverse the vector to find the process that has been
+                  // arrived.
       if (it->arrive_time <= time) {
         it->is_arrived = true;
         find = true;
       }
     }
-    if (find == false) {
+    if (find == false) {  // At the time no proccess arrives.
       ++time;
       continue;
     } else {
-      sort(v1.begin(), v1.end(), ComparePCBforPriority());
+      sort(v1.begin(), v1.end(),
+           ComparePCBforPriority());  // Sort by is_arrived, priority, arrival
+                                      // time and process number.
       it = v1.begin();
-      it->priority_ = it->priority_ + 3;
-      if (it->run_time <= it->time_slice) {
+      it->priority_ = it->priority_ + 3;//Change the priority.
+      if (it->run_time <= it->time_slice) {//When the process run to the end.
         cout << number << '/' << it->process_number << '/' << time << '/'
              << time + it->run_time << '/' << it->priority_ << endl;
-        time += it->run_time;
+        time += it->run_time;//Change the time.
         ++number;
         it++;
-        while (it != v1.end()) {
+        while (it != v1.end()) {//Change the priority of other processes
           if (it->arrive_time < time && it->priority_ >= 1) {
             it->priority_ = it->priority_ - 1;
           }
@@ -338,14 +360,14 @@ void Priorityalgorithm(vector<PCB>& v1) {
         }
         it = v1.begin();
         v1.erase(it);
-      } else {
+      } else {//The process didn't run to the end.
         cout << number << '/' << it->process_number << '/' << time << '/'
              << time + it->time_slice << '/' << it->priority_ << endl;
         it->run_time = it->run_time - it->time_slice;
-        time += it->time_slice;
+        time += it->time_slice;//Change the time.
         ++number;
         it++;
-        while (it != v1.end()) {
+        while (it != v1.end()) {//Change the priority of other processes
           if (it->arrive_time < time && it->priority_ >= 1) {
             it->priority_ = it->priority_ - 1;
           }
