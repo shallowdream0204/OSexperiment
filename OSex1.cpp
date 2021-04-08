@@ -174,65 +174,67 @@ void SRTFalgorithm(vector<PCB>& v1) {
   bool first = true;
   bool find = false;
   vector<PCB>::iterator it, it1, it2, it3;
-  sort(v1.begin(), v1.end(), ComparePCBforFCFS());
+  sort(v1.begin(), v1.end(),
+       ComparePCBforFCFS());  // Sort by arrival time, then process number.
   while (!v1.empty()) {
     find = false;
-    for (it = v1.begin(); it != v1.end(); it++) {
+    for (it = v1.begin(); it != v1.end(); it++) {  // Traverse the vector.
       if (it->arrive_time <= time) {
         find = true;
         it->is_arrived = true;
       }
     }
-    if (find == false) {
+    if (find == false) {  // No process has arrived.
       ++time;
       continue;
     }
-    if (first == true) {
+    if (first == true) {  // The process becomes running at this moment.
       for (it2 = v1.begin(); it2 != v1.end(); it2++) {
         if (it2->is_arrived == true) break;
       }
       for (it1 = v1.begin(); it1 != v1.end(); it1++) {
         if (it1->run_time < it2->run_time && it1->is_arrived == true) it2 = it1;
-      }
+      }  // Find the process that has the minimal run time.
       it2->run_time = it2->run_time - 1;
       first = false;
-      ++time;
+      ++time;  // Change time.
       ++count;
-      if (it2->run_time == 0) {
+      if (it2->run_time == 0) {  // The process has been found run to the end.
         cout << number << '/' << it2->process_number << '/' << time - count
              << '/' << time << it2->priority_ << endl;
         v1.erase(it2);
         count = 0;
         ++number;
-        first = true;
+        first = true;  // The next process becomes running at this moment.
       }
-    } else {
+    } else {  // The process has runned last moment.
       for (it3 = v1.begin(); it3 != v1.end(); it3++) {
         if (it3->is_arrived == true) break;
       }
       for (it1 = v1.begin(); it1 != v1.end(); it1++) {
         if (it1->run_time < it3->run_time && it1->is_arrived == true) it3 = it1;
-      }
-      if (it3 == it2) {
+      }                  // Find the process that has the minimal run time.
+      if (it3 == it2) {  // When the newly found process is the current process
         it2->run_time = it2->run_time - 1;
-        ++time;
-        ++count;
-        if (it2->run_time == 0) {
+        ++time;                    // Change time.
+        ++count;                   // Count how long the process will run.
+        if (it2->run_time == 0) {  // Run to the end.
           cout << number << '/' << it2->process_number << '/' << time - count
                << '/' << time << '/' << it2->priority_ << endl;
           v1.erase(it2);
-          first = true;
+          first = true;  // The next process becomes running at this moment.
           count = 0;
           ++number;
         }
-      } else {
+      } else {  // When the newly found process is not the current process
         cout << number << '/' << it2->process_number << '/' << time - count
              << '/' << time << '/' << it2->priority_ << endl;
-        ++time;
-        count = 1;
+        ++time;     // Change time.
+        count = 1;  // Count running time.
         ++number;
         it3->run_time = it3->run_time - 1;
-        if (it3->run_time == 0) {
+        if (it3->run_time ==
+            0) {  // When the newly found process run to the end at the moment.
           cout << number << '/' << it3->process_number << '/' << time - count
                << '/' << time << '/' << it3->priority_ << endl;
           v1.erase(it3);
@@ -345,14 +347,14 @@ void Priorityalgorithm(vector<PCB>& v1) {
            ComparePCBforPriority());  // Sort by is_arrived, priority, arrival
                                       // time and process number.
       it = v1.begin();
-      it->priority_ = it->priority_ + 3;//Change the priority.
-      if (it->run_time <= it->time_slice) {//When the process run to the end.
+      it->priority_ = it->priority_ + 3;     // Change the priority.
+      if (it->run_time <= it->time_slice) {  // When the process run to the end.
         cout << number << '/' << it->process_number << '/' << time << '/'
              << time + it->run_time << '/' << it->priority_ << endl;
-        time += it->run_time;//Change the time.
+        time += it->run_time;  // Change the time.
         ++number;
         it++;
-        while (it != v1.end()) {//Change the priority of other processes
+        while (it != v1.end()) {  // Change the priority of other processes
           if (it->arrive_time < time && it->priority_ >= 1) {
             it->priority_ = it->priority_ - 1;
           }
@@ -360,14 +362,14 @@ void Priorityalgorithm(vector<PCB>& v1) {
         }
         it = v1.begin();
         v1.erase(it);
-      } else {//The process didn't run to the end.
+      } else {  // The process didn't run to the end.
         cout << number << '/' << it->process_number << '/' << time << '/'
              << time + it->time_slice << '/' << it->priority_ << endl;
         it->run_time = it->run_time - it->time_slice;
-        time += it->time_slice;//Change the time.
+        time += it->time_slice;  // Change the time.
         ++number;
         it++;
-        while (it != v1.end()) {//Change the priority of other processes
+        while (it != v1.end()) {  // Change the priority of other processes
           if (it->arrive_time < time && it->priority_ >= 1) {
             it->priority_ = it->priority_ - 1;
           }
